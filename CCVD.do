@@ -1278,6 +1278,7 @@ HRT -- heart death.
       display columns/2/.style={column name=CHD, column type={r}},
       display columns/3/.style={column name=CBD, column type={r}},
       display columns/4/.style={column name=HFD, column type={r}},
+      display columns/5/.style={column name=HRT, column type={r}},
       every head row/.style={
         before row={\toprule
 					& \multicolumn{4}{c}{Cause of death} \\
@@ -1318,6 +1319,7 @@ HRT -- heart death.
       display columns/4/.style={column name=CHD, column type={r}},
       display columns/5/.style={column name=CBD, column type={r}},
       display columns/6/.style={column name=HFD, column type={r}},
+      display columns/7/.style={column name=HRT, column type={r}},
       every head row/.style={
         before row={\toprule
 					& & & \multicolumn{4}{c}{Cause of death} \\
@@ -1355,6 +1357,7 @@ HRT -- heart death.
       display columns/3/.style={column name=CHD, column type={r}},
       display columns/4/.style={column name=CBD, column type={r}},
       display columns/5/.style={column name=HFD, column type={r}},
+      display columns/6/.style={column name=HRT, column type={r}},
       every head row/.style={
         before row={\toprule
 					& & \multicolumn{4}{c}{Cause of death} \\
