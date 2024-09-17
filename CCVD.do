@@ -319,7 +319,7 @@ graph combine ///
 GPH/cr_`i'_dm_`c'.gph ///
 GPH/cr_`i'_nondm_`c'.gph ///
 , graphregion(color(white)) cols(2) altshrink xsize(10)
-texdoc graph, label(cr_`i'_`c') figure(h!) ///
+texdoc graph, label(cr_`i'_`c') figure(h!) cabove ///
 caption(Crude mortality rate by cause of death, sex, and diabetes status. `oo'. `co'.)
 }
 texdoc stlog close
@@ -757,7 +757,7 @@ texdoc stlog close
 
 texdoc stlog, cmdlog
 foreach ii in cvd chd cbd hfd hrt {
-if "`i'" == "cvd" {
+if "`ii'" == "cvd" {
 local oo = "Cardiovascular disease"
 }
 if "`ii'" == "chd" {
@@ -780,7 +780,7 @@ GPH/MD_`ii'_dm_1.gph ///
 GPH/MD_`ii'_nondm_1.gph ///
 GPH/SMRa_`ii'_1.gph ///
 , graphregion(color(white)) cols(3) altshrink xsize(10)
-texdoc graph, label(gph_`ii') figure(h!) ///
+texdoc graph, label(gph_`ii') figure(h!) cabove ///
 caption(Mortality rate in people with and without diabetes and mortality rate ratio by age. `oo'.)
 }
 texdoc stlog close
@@ -941,7 +941,7 @@ else {
 local co = "`i'"
 }
 foreach ii in cvd chd cbd hfd {
-if "`i'" == "cvd" {
+if "`ii'" == "cvd" {
 local oo = "Cardiovascular disease"
 }
 if "`ii'" == "chd" {
@@ -978,7 +978,7 @@ else {
 local co = "`i'"
 }
 foreach ii in cvd chd cbd hfd {
-if "`i'" == "cvd" {
+if "`ii'" == "cvd" {
 local oo = "Cardiovascular disease"
 }
 if "`ii'" == "chd" {
@@ -999,7 +999,7 @@ GPH/MD2_`i'_`ii'_nondm_0.gph ///
 GPH/MD2_`i'_`ii'_dm_1.gph ///
 GPH/MD2_`i'_`ii'_nondm_1.gph ///
 , graphregion(color(white)) cols(2) altshrink xsize(5)
-texdoc graph, label(gph2_`i'`ii') figure(h!) ///
+texdoc graph, label(gph2_`i'`ii') figure(h!) cabove ///
 caption(Mortality rate in people with and without diabetes by age and calendar time. `co'. `oo'.)
 }
 }
@@ -1614,7 +1614,7 @@ GPH/APCage_`i'_`ii'_0_2.gph ///
 GPH/APCage_`i'_`ii'_1_1.gph ///
 GPH/APCage_`i'_`ii'_1_2.gph ///
 , altshrink rows(3) xsize(3.5) graphregion(color(white))
-texdoc graph, label(`i'`ii'apcage) figure(h!) caption(Annual percent change in mortality rates ///
+texdoc graph, label(`i'`ii'apcage) figure(h!) cabove caption(Annual percent change in mortality rates ///
 by diabetes status and sex. `co'. `oo'. Values are predicted from a Poisson model with a ///
 spline effect of attained age, a log-linear effect of calendar time, and an interaction ///
 between age and calendar time. The left panels use a spline term for age in the interaction, the right panels use the product of ///
