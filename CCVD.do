@@ -1161,7 +1161,7 @@ save SMR_APCs, replace
 use APCs, clear
 replace country = "Canada (Alberta)" if country == "Canada1"
 replace country = "South Korea" if country == "SKorea"
-tostring A5-A7, force format(%9.2f) replace
+tostring A5-A7, force format(%9.1f) replace
 gen APC = A5 + " (" + A6 + ", " + A7 + ")"
 drop A5-A8
 reshape wide APC, i(A1 country A3 A4) j(A2) string
@@ -1194,7 +1194,7 @@ export delimited using CSV/APCS.csv, delimiter(":") novarnames replace
 use SMR_APCs, clear
 replace country = "Canada (Alberta)" if country == "Canada1"
 replace country = "South Korea" if country == "SKorea"
-tostring A4-A6, force format(%9.2f) replace
+tostring A4-A6, force format(%9.1f) replace
 gen APC = A4 + " (" + A5 + ", " + A6 + ")"
 drop A4-A7
 reshape wide APC, i(A1 country A3) j(A2) string
@@ -1243,8 +1243,8 @@ texdoc stlog close
       display columns/2/.style={column name=CVD, column type={r}},
       display columns/3/.style={column name=CHD, column type={r}},
       display columns/4/.style={column name=CBD, column type={r}},
-      display columns/5/.style={column name=HFD, column type={r}},
-      display columns/6/.style={column name=HRT, column type={r}},
+      display columns/5/.style={column name=HF, column type={r}},
+      display columns/6/.style={column name=Cardiac, column type={r}},
       every head row/.style={
         before row={\toprule
 					& & \multicolumn{4}{c}{Cause of death} \\
