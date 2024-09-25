@@ -88,39 +88,34 @@ Monash University, Melbourne, Australia \\\
 texdoc stlog, cmdlog nodo
 cd /home/jimb0w/Documents/CCVD
 *copy /home/jimb0w/Documents/CM/CMdataCVD.dta CMdataCVD.dta
-
-foreach c in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach c in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 use CMdataCVD, clear
 keep if country == "`c'"
 gen hrt_d_dm = chd_d_dm+hfd_d_dm
 gen hrt_d_nondm = chd_d_nondm+hfd_d_nondm
-
 save `c', replace
 }
-
 clear
-set obs 8
+set obs 9
 gen country = "Australia" if _n == 1
 replace country = "Canada (Alberta)" if _n == 2
-replace country = "Denmark" if _n == 3
-replace country = "Finland" if _n == 4
-replace country = "France" if _n == 5
-replace country = "Lithuania" if _n == 6
-replace country = "Scotland" if _n == 7
-replace country = "South Korea" if _n == 8
-colorpalette hue, n(8) luminance(50) nograph
+replace country = "Canada (Ontario)" if _n == 3
+replace country = "Denmark" if _n == 4
+replace country = "Finland" if _n == 5
+replace country = "France" if _n == 6
+replace country = "Lithuania" if _n == 7
+replace country = "Scotland" if _n == 8
+replace country = "South Korea" if _n == 9
+colorpalette hue, n(9) luminance(50) nograph
 gen col = ""
-forval i = 1/8 {
+forval i = 1/9 {
 replace col = "`r(p`i')'" if _n == `i'
 }
 save ccol, replace
-
-
-
-
 *mkdir CSV
 use CMdataCVD, clear
 replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
 replace country = "South Korea" if country == "SKorea"
 bysort country (cal) : egen lb = min(cal)
 bysort country (cal) : egen ub = max(cal)
@@ -213,10 +208,13 @@ HFD -- heart failure;
 
 texdoc stlog, cmdlog nodo
 *mkdir GPH
-foreach c in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach c in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 use `c', clear
 if "`c'" == "Canada1" {
 local co = "Canada (Alberta)"
+}
+else if "`c'" == "Canada2" {
+local co = "Canada (Ontario)"
 }
 else if "`c'" == "SKorea" {
 local co = "South Korea"
@@ -268,10 +266,13 @@ GPH/cr_`i'_nondm_`c'.gph ///
 }
 texdoc stlog close
 texdoc stlog, nolog
-foreach c in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach c in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 use `c', clear
 if "`c'" == "Canada1" {
 local co = "Canada (Alberta)"
+}
+else if "`c'" == "Canada2" {
+local co = "Canada (Ontario)"
 }
 else if "`c'" == "SKorea" {
 local co = "South Korea"
@@ -363,7 +364,7 @@ All rates and MRRs are predicted in 2017
 
 texdoc stlog, cmdlog nodo
 *mkdir MD
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 foreach ii in cvd chd cbd hfd hrt {
 foreach iii in dm nondm {
 foreach iiii in 0 1 {
@@ -439,7 +440,7 @@ save MD/R_`i'_`ii'_`iii'_`iiii', replace
 }
 }
 }
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 use `i', clear
 expand 2
 bysort cal age_dm sex : gen dm = _n-1
@@ -452,7 +453,7 @@ drop if age==.
 save `i'_long, replace
 }
 quietly {
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 foreach ii in cvd chd cbd hfd hrt {
 forval iii = 0/1 {
 use `i'_long, clear
@@ -584,16 +585,17 @@ if "`iii'" == "nondm" {
 local w = "without"
 }
 clear
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 append using MD/R_`i'_`ii'_`iii'_`iiii'
 }
 keep if sex == `iiii'
 replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
 replace country = "South Korea" if country == "SKorea"
 preserve
 bysort country : keep if _n == 1
 merge 1:1 country using ccol, keep(3) nogen
-forval i = 1/8 {
+forval i = 1/9 {
 local C`i' = country[`i']
 local col`i' = col[`i']
 }
@@ -606,19 +608,22 @@ twoway ///
 (line _Rate age if country == "`C2'", color("`col2'") lpattern(solid)) ///
 (rarea ub lb age if country == "`C3'", color("`col3'%30") fintensity(inten80) lwidth(none)) ///
 (line _Rate age if country == "`C3'", color("`col3'") lpattern(solid)) ///
-(rarea ub lb age if country == "`C5'", color("`col5'%30") fintensity(inten80) lwidth(none)) ///
-(line _Rate age if country == "`C5'", color("`col5'") lpattern(solid)) ///
-(rarea ub lb age if country == "`C7'", color("`col7'%30") fintensity(inten80) lwidth(none)) ///
-(line _Rate age if country == "`C7'", color("`col7'") lpattern(solid)) ///
+(rarea ub lb age if country == "`C4'", color("`col4'%30") fintensity(inten80) lwidth(none)) ///
+(line _Rate age if country == "`C4'", color("`col4'") lpattern(solid)) ///
+(rarea ub lb age if country == "`C6'", color("`col6'%30") fintensity(inten80) lwidth(none)) ///
+(line _Rate age if country == "`C6'", color("`col6'") lpattern(solid)) ///
 (rarea ub lb age if country == "`C8'", color("`col8'%30") fintensity(inten80) lwidth(none)) ///
 (line _Rate age if country == "`C8'", color("`col8'") lpattern(solid)) ///
+(rarea ub lb age if country == "`C9'", color("`col9'%30") fintensity(inten80) lwidth(none)) ///
+(line _Rate age if country == "`C9'", color("`col9'") lpattern(solid)) ///
 , legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
 order(2 "`C1'" ///
 4 "`C2'" ///
 6 "`C3'" ///
-8 "`C5'" ///
-10 "`C7'" ///
-12 "`C8'") ///
+8 "`C4'" ///
+10 "`C6'" ///
+12 "`C8'" ///
+14 "`C9'") ///
 cols(1)) ///
 graphregion(color(white)) ///
 ylabel(0.0001 "0.0001" 0.001 "0.001" 0.01 "0.01" 0.1 "0.1" 1 10 100, grid angle(0)) ///
@@ -647,6 +652,8 @@ twoway ///
 (line _Rate age if country == "`C7'", color("`col7'") lpattern(solid)) ///
 (rarea ub lb age if country == "`C8'", color("`col8'%30") fintensity(inten80) lwidth(none)) ///
 (line _Rate age if country == "`C8'", color("`col8'") lpattern(solid)) ///
+(rarea ub lb age if country == "`C9'", color("`col9'%30") fintensity(inten80) lwidth(none)) ///
+(line _Rate age if country == "`C9'", color("`col9'") lpattern(solid)) ///
 , legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
 order(2 "`C1'" ///
 4 "`C2'" ///
@@ -655,7 +662,8 @@ order(2 "`C1'" ///
 10 "`C5'" ///
 12 "`C6'" ///
 14 "`C7'" ///
-16 "`C8'") ///
+16 "`C8'" ///
+18 "`C9'") ///
 cols(1)) ///
 graphregion(color(white)) ///
 ylabel(0.0001 "0.0001" 0.001 "0.001" 0.01 "0.01" 0.1 "0.1" 1 10 100, grid angle(0)) ///
@@ -669,10 +677,11 @@ title("`s' `w' diabetes", placement(west) color(black) size(medium))
 graph save GPH/MD_`ii'_`iii'_`iiii', replace
 }
 clear
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 append using MD/SMRa_`i'_`ii'_`iiii'
 }
 replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
 replace country = "South Korea" if country == "SKorea"
 if "`ii'" == "hfd" |"`ii'" == "hrt" {
 twoway ///
@@ -682,19 +691,22 @@ twoway ///
 (line A1 age if country == "`C2'", color("`col2'") lpattern(solid)) ///
 (rarea A3 A2 age if country == "`C3'", color("`col3'%30") fintensity(inten80) lwidth(none)) ///
 (line A1 age if country == "`C3'", color("`col3'") lpattern(solid)) ///
-(rarea A3 A2 age if country == "`C5'", color("`col5'%30") fintensity(inten80) lwidth(none)) ///
-(line A1 age if country == "`C5'", color("`col5'") lpattern(solid)) ///
-(rarea A3 A2 age if country == "`C7'", color("`col7'%30") fintensity(inten80) lwidth(none)) ///
-(line A1 age if country == "`C7'", color("`col7'") lpattern(solid)) ///
+(rarea A3 A2 age if country == "`C4'", color("`col4'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 age if country == "`C4'", color("`col4'") lpattern(solid)) ///
+(rarea A3 A2 age if country == "`C6'", color("`col6'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 age if country == "`C6'", color("`col6'") lpattern(solid)) ///
 (rarea A3 A2 age if country == "`C8'", color("`col8'%30") fintensity(inten80) lwidth(none)) ///
 (line A1 age if country == "`C8'", color("`col8'") lpattern(solid)) ///
+(rarea A3 A2 age if country == "`C9'", color("`col9'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 age if country == "`C9'", color("`col9'") lpattern(solid)) ///
 , legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
 order(2 "`C1'" ///
 4 "`C2'" ///
 6 "`C3'" ///
-8 "`C5'" ///
-10 "`C7'" ///
-12 "`C8'") ///
+8 "`C4'" ///
+10 "`C6'" ///
+12 "`C8'" ///
+14 "`C9'") ///
 cols(1)) ///
 graphregion(color(white)) ///
 ylabel(0.2 "0.2" 0.5 "0.5" 1 2 5 10 20 50 100 200 500, grid angle(0)) ///
@@ -723,6 +735,8 @@ twoway ///
 (line A1 age if country == "`C7'", color("`col7'") lpattern(solid)) ///
 (rarea A3 A2 age if country == "`C8'", color("`col8'%30") fintensity(inten80) lwidth(none)) ///
 (line A1 age if country == "`C8'", color("`col8'") lpattern(solid)) ///
+(rarea A3 A2 age if country == "`C9'", color("`col9'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 age if country == "`C9'", color("`col9'") lpattern(solid)) ///
 , legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
 order(2 "`C1'" ///
 4 "`C2'" ///
@@ -731,7 +745,8 @@ order(2 "`C1'" ///
 10 "`C5'" ///
 12 "`C6'" ///
 14 "`C7'" ///
-16 "`C8'") ///
+16 "`C8'" ///
+18 "`C9'") ///
 cols(1)) ///
 graphregion(color(white)) ///
 ylabel(0.2 "0.2" 0.5 "0.5" 1 2 5 10 20 50 100 200 500, grid angle(0)) ///
@@ -797,7 +812,7 @@ Same models as above, just presented differently.
 ***/
 
 texdoc stlog, cmdlog nodo
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 foreach ii in cvd chd cbd hfd {
 foreach iii in dm nondm {
 foreach iiii in 0 1 {
@@ -876,7 +891,7 @@ save MD/R2_`i'_`ii'_`iii'_`iiii', replace
 }
 }
 }
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 foreach ii in cvd chd cbd hfd {
 foreach iii in dm nondm {
 foreach iiii in 0 1 {
@@ -930,9 +945,12 @@ graph save GPH/MD2_`i'_`ii'_`iii'_`iiii', replace
 }
 texdoc stlog close
 texdoc stlog, cmdlog nodo
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 if "`i'" == "Canada1" {
 local co = "Canada (Alberta)"
+}
+else if "`c'" == "Canada2" {
+local co = "Canada (Ontario)"
 }
 else if "`i'" == "SKorea" {
 local co = "South Korea"
@@ -967,9 +985,12 @@ GPH/MD2_`i'_`ii'_nondm_1.gph ///
 }
 texdoc stlog close
 texdoc stlog, nolog
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 if "`i'" == "Canada1" {
 local co = "Canada (Alberta)"
+}
+else if "`c'" == "Canada2" {
+local co = "Canada (Ontario)"
 }
 else if "`i'" == "SKorea" {
 local co = "South Korea"
@@ -1023,7 +1044,7 @@ texdoc stlog close
 
 texdoc stlog, cmdlog nodo
 quietly {
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 foreach ii in cvd chd cbd hfd hrt {
 foreach iii in dm nondm {
 use `i', clear
@@ -1056,7 +1077,7 @@ matrix A_`i'_`ii'_`iii'_`iiii' = (r(table)[1,1], r(table)[5,1], r(table)[6,1], r
 }
 matrix A = (.,.,.,.,.,.,.,.)
 local a1 = 0
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 local a1 = `a1'+1
 local a2 = 0
 foreach ii in cvd chd cbd hfd hrt {
@@ -1078,7 +1099,7 @@ drop if A1==.
 tostring A2-A3, replace format(%9.0f) force
 gen country=""
 local a1 = 0
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 local a1 = `a1'+1
 replace country = "`i'" if A1 == `a1'
 local a2 = 0
@@ -1096,7 +1117,7 @@ replace A5 = 100*(exp(A5)-1)
 replace A6 = 100*(exp(A6)-1)
 replace A7 = 100*(exp(A7)-1)
 save APCs, replace
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 foreach ii in cvd chd cbd hfd hrt {
 use `i'_long, clear
 replace calendar = (calendar-2009.5)/5
@@ -1125,7 +1146,7 @@ matrix A_`i'_`ii'_`iii' = (r(table)[1,9], r(table)[5,9], r(table)[6,9], r(table)
 }
 matrix A = (.,.,.,.,.,.,.)
 local a1 = 0
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 local a1 = `a1'+1
 local a2 = 0
 foreach ii in cvd chd cbd hfd hrt {
@@ -1143,7 +1164,7 @@ drop if A1==.
 tostring A2, replace format(%9.0f) force
 gen country=""
 local a1 = 0
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 local a1 = `a1'+1
 replace country = "`i'" if A1 == `a1'
 local a2 = 0
@@ -1160,6 +1181,7 @@ save SMR_APCs, replace
 
 use APCs, clear
 replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
 replace country = "South Korea" if country == "SKorea"
 tostring A5-A7, force format(%9.1f) replace
 gen APC = A5 + " (" + A6 + ", " + A7 + ")"
@@ -1189,10 +1211,9 @@ bysort country (njm) : replace country ="" if _n!=1
 order country A3 A4 APCcvd APCchd APCcbd APChfd APChrt
 drop njm
 export delimited using CSV/APCS.csv, delimiter(":") novarnames replace
-
-
 use SMR_APCs, clear
 replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
 replace country = "South Korea" if country == "SKorea"
 tostring A4-A6, force format(%9.1f) replace
 gen APC = A4 + " (" + A5 + ", " + A6 + ")"
@@ -1205,7 +1226,6 @@ replace A3 = "Male" if A3 == "1"
 replace A3 = "Overall" if A3 == "2"
 replace APChfd = "" if country == "Finland" | country == "Lithuania"
 replace APChrt = "" if country == "Finland" | country == "Lithuania"
-
 preserve
 keep if A3 == "Overall"
 drop A3
@@ -1218,7 +1238,6 @@ bysort country (njm) : replace country ="" if _n!=1
 order country A3 APCcvd APCchd APCcbd APChfd APChrt
 drop njm
 export delimited using CSV/SMR_APCS.csv, delimiter(":") novarnames replace
-
 texdoc stlog close
 
 
@@ -1394,7 +1413,7 @@ product of log-linear effects of age and calendar time (plotted on the right in 
 
 texdoc stlog, cmdlog nodo
 quietly {
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 foreach ii in cvd chd cbd hfd {
 noisily di "`i' `ii'"
 foreach iii in dm nondm {
@@ -1483,7 +1502,7 @@ clear all
 }
 }
 }
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 foreach ii in cvd chd cbd hfd {
 forval a = 1/2 {
 clear
@@ -1541,9 +1560,12 @@ graph save "Graph" GPH/APCage_`i'_`ii'_`iiii'_`a', replace
 }
 texdoc stlog close
 texdoc stlog, cmdlog nodo
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 if "`i'" == "Canada1" {
 local co = "Canada (Alberta)"
+}
+else if "`c'" == "Canada2" {
+local co = "Canada (Ontario)"
 }
 else if "`i'" == "SKorea" {
 local co = "South Korea"
@@ -1580,9 +1602,12 @@ GPH/APCage_`i'_`ii'_1_2.gph ///
 }
 texdoc stlog close
 texdoc stlog, nolog
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 if "`i'" == "Canada1" {
 local co = "Canada (Alberta)"
+}
+else if "`c'" == "Canada2" {
+local co = "Canada (Ontario)"
 }
 else if "`i'" == "SKorea" {
 local co = "South Korea"
@@ -1644,7 +1669,7 @@ pwd
 *copy /home/jimb0w/Documents/CM/refpop.dta refpop.dta
 *copy /home/jimb0w/Documents/CM/refpops.dta refpops.dta
 quietly {
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 foreach ii in cvd chd cbd hfd hrt {
 foreach iii in dm nondm {
 foreach iiii in 0 1 {
@@ -1774,7 +1799,7 @@ save MD/STD_`i'_`ii'_`iii', replace
 texdoc stlog close
 texdoc stlog
 quietly {
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 foreach ii in cvd chd cbd hfd hrt {
 foreach iii in dm nondm {
 foreach iiii in 0 1 {
@@ -1927,15 +1952,16 @@ if "`iii'" == "nondm" {
 local w = "without"
 }
 clear
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 append using MD/STD_`i'_`ii'_`iii'
 }
 replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
 replace country = "South Korea" if country == "SKorea"
 preserve
 bysort country : keep if _n == 1
 merge 1:1 country using ccol
-forval i = 1/8 {
+forval i = 1/9 {
 local C`i' = country[`i']
 local col`i' = col[`i']
 }
@@ -1945,7 +1971,6 @@ replace stdrate=. if country == "Finland" | country == "Lithuania"
 replace lb =. if country == "Finland" | country == "Lithuania"
 replace ub =. if country == "Finland" | country == "Lithuania"
 }
-
 twoway ///
 (rarea ub lb calendar if country == "`C1'", color("`col1'%30") fintensity(inten80) lwidth(none)) ///
 (line stdrate calendar if country == "`C1'", color("`col1'") lpattern(solid)) ///
@@ -1963,6 +1988,8 @@ twoway ///
 (line stdrate calendar if country == "`C7'", color("`col7'") lpattern(solid)) ///
 (rarea ub lb calendar if country == "`C8'", color("`col8'%30") fintensity(inten80) lwidth(none)) ///
 (line stdrate calendar if country == "`C8'", color("`col8'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C9'", color("`col9'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C9'", color("`col9'") lpattern(solid)) ///
 , legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
 order(2 "`C1'" ///
 4 "`C2'" ///
@@ -1971,7 +1998,8 @@ order(2 "`C1'" ///
 10 "`C5'" ///
 12 "`C6'" ///
 14 "`C7'" ///
-16 "`C8'") ///
+16 "`C8'" ///
+18 "`C9'") ///
 cols(1)) ///
 graphregion(color(white)) ///
 ylabel(0.01 "0.01"0.1 1 10 100, grid angle(0)) ///
@@ -1990,15 +2018,16 @@ if `iiii' == 1 {
 local s = "males"
 }
 clear
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 append using MD/STD_`i'_`ii'_`iii'_`iiii'
 }
 replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
 replace country = "South Korea" if country == "SKorea"
 preserve
 bysort country : keep if _n == 1
 merge 1:1 country using ccol
-forval i = 1/8 {
+forval i = 1/9 {
 local C`i' = country[`i']
 local col`i' = col[`i']
 }
@@ -2025,6 +2054,8 @@ twoway ///
 (line stdrate calendar if country == "`C7'", color("`col7'") lpattern(solid)) ///
 (rarea ub lb calendar if country == "`C8'", color("`col8'%30") fintensity(inten80) lwidth(none)) ///
 (line stdrate calendar if country == "`C8'", color("`col8'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C9'", color("`col9'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C9'", color("`col9'") lpattern(solid)) ///
 , legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
 order(2 "`C1'" ///
 4 "`C2'" ///
@@ -2033,7 +2064,8 @@ order(2 "`C1'" ///
 10 "`C5'" ///
 12 "`C6'" ///
 14 "`C7'" ///
-16 "`C8'") ///
+16 "`C8'" ///
+18 "`C9'") ///
 cols(1)) ///
 graphregion(color(white)) ///
 ylabel(0.01 "0.01"0.1 1 10 100, grid angle(0)) ///
@@ -2078,9 +2110,12 @@ caption(Age-standardised mortality rate by cause of death, people aged 40-89. `o
 }
 texdoc stlog close
 texdoc stlog, cmdlog nodo
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 if "`i'" == "Canada1" {
 local co = "Canada (Alberta)"
+}
+else if "`c'" == "Canada2" {
+local co = "Canada (Ontario)"
 }
 else if "`i'" == "SKorea" {
 local co = "South Korea"
@@ -2182,9 +2217,12 @@ graph save GPH/STDcvd_GPH_`i'_`iii'_`iiii', replace
 }
 texdoc stlog close
 texdoc stlog, cmdlog 
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 if "`i'" == "Canada1" {
 local co = "Canada (Alberta)"
+}
+else if "`c'" == "Canada2" {
+local co = "Canada (Ontario)"
 }
 else if "`i'" == "SKorea" {
 local co = "South Korea"
@@ -2218,7 +2256,7 @@ texdoc stlog close
 
 texdoc stlog, cmdlog nodo
 quietly {
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 foreach ii in cvd chd cbd hfd hrt {
 use `i'_long, clear
 replace calendar = calendar-2009.5
@@ -2387,10 +2425,11 @@ if "`ii'" == "hrt" {
 local oo = "Heart death"
 }
 clear
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 append using MD/SMR_`i'_`ii'
 }
 replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
 replace country = "South Korea" if country == "SKorea"
 preserve
 bysort country : keep if _n == 1
@@ -2422,6 +2461,8 @@ twoway ///
 (line A1 calendar if country == "`C7'", color("`col7'") lpattern(solid)) ///
 (rarea A3 A2 calendar if country == "`C8'", color("`col8'%30") fintensity(inten80) lwidth(none)) ///
 (line A1 calendar if country == "`C8'", color("`col8'") lpattern(solid)) ///
+(rarea A3 A2 calendar if country == "`C9'", color("`col9'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 calendar if country == "`C9'", color("`col9'") lpattern(solid)) ///
 , legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
 order(2 "`C1'" ///
 4 "`C2'" ///
@@ -2430,7 +2471,8 @@ order(2 "`C1'" ///
 10 "`C5'" ///
 12 "`C6'" ///
 14 "`C7'" ///
-16 "`C8'") ///
+16 "`C8'" ///
+18 "`C9'") ///
 cols(1)) ///
 graphregion(color(white)) ///
 ylabel(0.5 "0.5" 1 2 3, grid angle(0)) ///
@@ -2449,10 +2491,11 @@ if `iii' == 1 {
 local s = "males"
 }
 clear
-foreach i in Australia Canada1 Denmark Finland France Lithuania Scotland SKorea {
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 append using MD/SMR_`i'_`ii'_`iii'
 }
 replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
 replace country = "South Korea" if country == "SKorea"
 preserve
 bysort country : keep if _n == 1
@@ -2484,6 +2527,8 @@ twoway ///
 (line A1 calendar if country == "`C7'", color("`col7'") lpattern(solid)) ///
 (rarea A3 A2 calendar if country == "`C8'", color("`col8'%30") fintensity(inten80) lwidth(none)) ///
 (line A1 calendar if country == "`C8'", color("`col8'") lpattern(solid)) ///
+(rarea A3 A2 calendar if country == "`C9'", color("`col9'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 calendar if country == "`C9'", color("`col9'") lpattern(solid)) ///
 , legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
 order(2 "`C1'" ///
 4 "`C2'" ///
@@ -2492,7 +2537,8 @@ order(2 "`C1'" ///
 10 "`C5'" ///
 12 "`C6'" ///
 14 "`C7'" ///
-16 "`C8'") ///
+16 "`C8'" ///
+18 "`C9'") ///
 cols(1)) ///
 graphregion(color(white)) ///
 ylabel(0.5 "0.5" 1 2 3, grid angle(0)) ///
