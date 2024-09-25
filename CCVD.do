@@ -949,7 +949,7 @@ foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland
 if "`i'" == "Canada1" {
 local co = "Canada (Alberta)"
 }
-else if "`c'" == "Canada2" {
+else if "`i'" == "Canada2" {
 local co = "Canada (Ontario)"
 }
 else if "`i'" == "SKorea" {
@@ -989,7 +989,7 @@ foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland
 if "`i'" == "Canada1" {
 local co = "Canada (Alberta)"
 }
-else if "`c'" == "Canada2" {
+else if "`i'" == "Canada2" {
 local co = "Canada (Ontario)"
 }
 else if "`i'" == "SKorea" {
@@ -1383,7 +1383,7 @@ HRT -- heart death.
 					},
         after row={\midrule}
             },
-        every nth row={4}{before row=\midrule},
+        every nth row={2}{before row=\midrule},
         every last row/.style={after row=\bottomrule},
     ]{CSV/SMR_APCS.csv}
   \end{center}
@@ -1564,7 +1564,7 @@ foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland
 if "`i'" == "Canada1" {
 local co = "Canada (Alberta)"
 }
-else if "`c'" == "Canada2" {
+else if "`i'" == "Canada2" {
 local co = "Canada (Ontario)"
 }
 else if "`i'" == "SKorea" {
@@ -1606,7 +1606,7 @@ foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland
 if "`i'" == "Canada1" {
 local co = "Canada (Alberta)"
 }
-else if "`c'" == "Canada2" {
+else if "`i'" == "Canada2" {
 local co = "Canada (Ontario)"
 }
 else if "`i'" == "SKorea" {
@@ -2114,7 +2114,7 @@ foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland
 if "`i'" == "Canada1" {
 local co = "Canada (Alberta)"
 }
-else if "`c'" == "Canada2" {
+else if "`i'" == "Canada2" {
 local co = "Canada (Ontario)"
 }
 else if "`i'" == "SKorea" {
@@ -2221,7 +2221,7 @@ foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland
 if "`i'" == "Canada1" {
 local co = "Canada (Alberta)"
 }
-else if "`c'" == "Canada2" {
+else if "`i'" == "Canada2" {
 local co = "Canada (Ontario)"
 }
 else if "`i'" == "SKorea" {
@@ -2434,7 +2434,7 @@ replace country = "South Korea" if country == "SKorea"
 preserve
 bysort country : keep if _n == 1
 merge 1:1 country using ccol
-forval i = 1/8 {
+forval i = 1/9 {
 local C`i' = country[`i']
 local col`i' = col[`i']
 }
@@ -2500,7 +2500,7 @@ replace country = "South Korea" if country == "SKorea"
 preserve
 bysort country : keep if _n == 1
 merge 1:1 country using ccol
-forval i = 1/8 {
+forval i = 1/9 {
 local C`i' = country[`i']
 local col`i' = col[`i']
 }
