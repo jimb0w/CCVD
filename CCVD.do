@@ -106,7 +106,7 @@ replace country = "France" if _n == 6
 replace country = "Lithuania" if _n == 7
 replace country = "Scotland" if _n == 8
 replace country = "South Korea" if _n == 9
-colorpalette hue, n(9) luminance(50) nograph
+colorpalette tol PuBr, n(9) nograph
 gen col = ""
 forval i = 1/9 {
 replace col = "`r(p`i')'" if _n == `i'
@@ -179,7 +179,7 @@ texdoc stlog close
       display columns/5/.style={column name=CVD, column type={r}},
       display columns/6/.style={column name=CHD, column type={r}},
       display columns/7/.style={column name=CBD, column type={r}},
-      display columns/8/.style={column name=HFD, column type={r}},
+      display columns/8/.style={column name=HF, column type={r}},
       every head row/.style={
         before row={\toprule
 					& & & & & \multicolumn{4}{c}{Death counts by cause of death} \\
@@ -194,7 +194,7 @@ Abbreviations:
 CVD -- cardiovascular disease; 
 CHD -- coronary heart disease; 
 CBD -- cerebrovascular disease;
-HFD -- heart failure;
+HF -- heart failure;
 \end{table}
 \end{landscape}
 
@@ -1278,8 +1278,8 @@ Abbreviations:
 CVD -- cardiovascular disease; 
 CHD -- coronary heart disease; 
 CBD -- cerebrovascular disease;
-HFD -- heart failure;
-HRT -- heart death.
+HF -- heart failure;
+Cardiac -- heart death.
 \end{table}
 
 
@@ -1296,8 +1296,8 @@ HRT -- heart death.
       display columns/1/.style={column name=CVD, column type={r}},
       display columns/2/.style={column name=CHD, column type={r}},
       display columns/3/.style={column name=CBD, column type={r}},
-      display columns/4/.style={column name=HFD, column type={r}},
-      display columns/5/.style={column name=HRT, column type={r}},
+      display columns/4/.style={column name=HF, column type={r}},
+      display columns/5/.style={column name=Cardiac, column type={r}},
       every head row/.style={
         before row={\toprule
 					& \multicolumn{4}{c}{Cause of death} \\
@@ -1311,8 +1311,8 @@ Abbreviations:
 CVD -- cardiovascular disease; 
 CHD -- coronary heart disease; 
 CBD -- cerebrovascular disease;
-HFD -- heart failure;
-HRT -- heart death.
+HF -- heart failure;
+Cardiac -- heart death.
 \end{table}
 
 
@@ -1337,8 +1337,8 @@ HRT -- heart death.
       display columns/3/.style={column name=CVD, column type={r}},
       display columns/4/.style={column name=CHD, column type={r}},
       display columns/5/.style={column name=CBD, column type={r}},
-      display columns/6/.style={column name=HFD, column type={r}},
-      display columns/7/.style={column name=HRT, column type={r}},
+      display columns/6/.style={column name=HF, column type={r}},
+      display columns/7/.style={column name=Cardiac, column type={r}},
       every head row/.style={
         before row={\toprule
 					& & & \multicolumn{4}{c}{Cause of death} \\
@@ -1353,8 +1353,8 @@ Abbreviations:
 CVD -- cardiovascular disease; 
 CHD -- coronary heart disease; 
 CBD -- cerebrovascular disease;
-HFD -- heart failure;
-HRT -- heart death.
+HF -- heart failure;
+Cardiac -- heart death.
 \end{table}
 
 
@@ -1375,8 +1375,8 @@ HRT -- heart death.
       display columns/2/.style={column name=CVD, column type={r}},
       display columns/3/.style={column name=CHD, column type={r}},
       display columns/4/.style={column name=CBD, column type={r}},
-      display columns/5/.style={column name=HFD, column type={r}},
-      display columns/6/.style={column name=HRT, column type={r}},
+      display columns/5/.style={column name=HF, column type={r}},
+      display columns/6/.style={column name=Cardiac, column type={r}},
       every head row/.style={
         before row={\toprule
 					& & \multicolumn{4}{c}{Cause of death} \\
@@ -1391,8 +1391,8 @@ Abbreviations:
 CVD -- cardiovascular disease; 
 CHD -- coronary heart disease; 
 CBD -- cerebrovascular disease;
-HFD -- heart failure;
-HRT -- heart death.
+HF -- heart failure;
+Cardiac -- heart death.
 \end{table}
 
 
@@ -2578,7 +2578,161 @@ texdoc graph, label(STDMRF_`ii') figure(h!) cabove ///
 caption(Mortality rate ratio by cause of death and sex. `oo')
 }
 texdoc stlog close
-
+texdoc stlog, nolog nodo
+*Figure 1
+foreach ii in chd cbd hfd {
+foreach iii in dm nondm {
+if "`ii'" == "chd" & "`iii'" == "dm" {
+local oo = "a"
+}
+if "`ii'" == "chd" & "`iii'" == "nondm" {
+local oo = "b"
+}
+if "`ii'" == "cbd" & "`iii'" == "dm" {
+local oo = "c"
+}
+if "`ii'" == "cbd" & "`iii'" == "nondm" {
+local oo = "d"
+}
+if "`ii'" == "hfd" & "`iii'" == "dm" {
+local oo = "e"
+}
+if "`ii'" == "hfd" & "`iii'" == "nondm" {
+local oo = "f"
+}
+clear
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
+append using MD/STD_`i'_`ii'_`iii'
+}
+replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
+replace country = "South Korea" if country == "SKorea"
+preserve
+bysort country : keep if _n == 1
+merge 1:1 country using ccol
+forval i = 1/9 {
+local C`i' = country[`i']
+local col`i' = col[`i']
+}
+restore
+if "`ii'" == "hfd" | "`ii'" == "hrt" {
+replace stdrate=. if country == "Finland" | country == "Lithuania"
+replace lb =. if country == "Finland" | country == "Lithuania"
+replace ub =. if country == "Finland" | country == "Lithuania"
+}
+twoway ///
+(rarea ub lb calendar if country == "`C1'", color("`col1'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C1'", color("`col1'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C2'", color("`col2'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C2'", color("`col2'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C3'", color("`col3'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C3'", color("`col3'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C4'", color("`col4'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C4'", color("`col4'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C5'", color("`col5'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C5'", color("`col5'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C6'", color("`col6'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C6'", color("`col6'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C7'", color("`col7'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C7'", color("`col7'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C8'", color("`col8'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C8'", color("`col8'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C9'", color("`col9'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C9'", color("`col9'") lpattern(solid)) ///
+, legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
+order(2 "`C1'" ///
+4 "`C2'" ///
+6 "`C3'" ///
+8 "`C4'" ///
+10 "`C5'" ///
+12 "`C6'" ///
+14 "`C7'" ///
+16 "`C8'" ///
+18 "`C9'") ///
+cols(1)) ///
+graphregion(color(white)) ///
+ylabel(0.01 "0.01"0.1 1 10 100, grid angle(0)) ///
+yscale(log range(0.01 100)) ///
+xscale(range(2000 2020)) ///
+xlabel(2000(5)2020, nogrid) ///
+ytitle("Mortality rate (per 1,000 person-years)", margin(a+2)) ///
+xtitle("Calendar year") ///
+title("`oo'", placement(west) color(black) size(large))
+graph save GPH/STD_GPH_`ii'_`iii'_F1, replace
+}
+}
+*Figure 2
+foreach ii in chd cbd hfd {
+if "`ii'" == "chd" {
+local oo = "a"
+}
+if "`ii'" == "cbd" {
+local oo = "b"
+}
+if "`ii'" == "hfd" {
+local oo = "c"
+}
+clear
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
+append using MD/SMR_`i'_`ii'
+}
+replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
+replace country = "South Korea" if country == "SKorea"
+preserve
+bysort country : keep if _n == 1
+merge 1:1 country using ccol
+forval i = 1/9 {
+local C`i' = country[`i']
+local col`i' = col[`i']
+}
+restore
+if "`ii'" == "hfd" | "`ii'" == "hrt" {
+replace A1 =. if country == "Finland" | country == "Lithuania"
+replace A2 =. if country == "Finland" | country == "Lithuania"
+replace A3 =. if country == "Finland" | country == "Lithuania"
+}
+twoway ///
+(rarea A3 A2 calendar if country == "`C1'", color("`col1'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 calendar if country == "`C1'", color("`col1'") lpattern(solid)) ///
+(rarea A3 A2 calendar if country == "`C2'", color("`col2'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 calendar if country == "`C2'", color("`col2'") lpattern(solid)) ///
+(rarea A3 A2 calendar if country == "`C3'", color("`col3'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 calendar if country == "`C3'", color("`col3'") lpattern(solid)) ///
+(rarea A3 A2 calendar if country == "`C4'", color("`col4'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 calendar if country == "`C4'", color("`col4'") lpattern(solid)) ///
+(rarea A3 A2 calendar if country == "`C5'", color("`col5'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 calendar if country == "`C5'", color("`col5'") lpattern(solid)) ///
+(rarea A3 A2 calendar if country == "`C6'", color("`col6'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 calendar if country == "`C6'", color("`col6'") lpattern(solid)) ///
+(rarea A3 A2 calendar if country == "`C7'", color("`col7'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 calendar if country == "`C7'", color("`col7'") lpattern(solid)) ///
+(rarea A3 A2 calendar if country == "`C8'", color("`col8'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 calendar if country == "`C8'", color("`col8'") lpattern(solid)) ///
+(rarea A3 A2 calendar if country == "`C9'", color("`col9'%30") fintensity(inten80) lwidth(none)) ///
+(line A1 calendar if country == "`C9'", color("`col9'") lpattern(solid)) ///
+, legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
+order(2 "`C1'" ///
+4 "`C2'" ///
+6 "`C3'" ///
+8 "`C4'" ///
+10 "`C5'" ///
+12 "`C6'" ///
+14 "`C7'" ///
+16 "`C8'" ///
+18 "`C9'") ///
+cols(1)) ///
+graphregion(color(white)) ///
+ylabel(0.5 "0.5" 1 2 3, grid angle(0)) ///
+xscale(range(2000 2020)) ///
+xlabel(2000(5)2020, nogrid) ///
+yline(1, lcol(black)) yscale(log range(0.5 3)) ///
+ytitle("Mortality rate ratio", margin(a+2)) ///
+xtitle("Calendar year") ///
+title("`oo'", placement(west) color(black) size(large))
+graph save GPH/SMR_`ii'_F2, replace
+}
+texdoc stlog close
 
 /***
 \color{black}
@@ -2587,6 +2741,26 @@ texdoc stlog close
 ***/
 
 texdoc close
+
+cd /home/jimb0w/Documents/CCVD
+
+*Figure 1
+graph combine ///
+GPH/STD_GPH_chd_dm_F1.gph ///
+GPH/STD_GPH_chd_nondm_F1.gph ///
+GPH/STD_GPH_cbd_dm_F1.gph ///
+GPH/STD_GPH_cbd_nondm_F1.gph ///
+GPH/STD_GPH_hfd_dm_F1.gph ///
+GPH/STD_GPH_hfd_nondm_F1.gph ///
+, graphregion(color(white)) cols(2) altshrink xsize(5)
+graph export "/home/jimb0w/Documents/CCVD/F1.pdf", as(pdf) name("Graph") replace
+
+graph combine ///
+GPH/SMR_chd_F2.gph ///
+GPH/SMR_cbd_F2.gph ///
+GPH/SMR_hfd_F2.gph ///
+, graphregion(color(white)) cols(1) altshrink xsize(2.5)
+graph export "/home/jimb0w/Documents/CCVD/F2.pdf", as(pdf) name("Graph") replace
 
 ! pdflatex CCVD
 ! pdflatex CCVD
