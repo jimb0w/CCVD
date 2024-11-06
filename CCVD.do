@@ -1178,7 +1178,6 @@ replace A5 = 100*(exp(A5)-1)
 replace A6 = 100*(exp(A6)-1)
 save SMR_APCs, replace
 }
-
 use APCs, clear
 replace country = "Canada (Alberta)" if country == "Canada1"
 replace country = "Canada (Ontario)" if country == "Canada2"
@@ -1238,6 +1237,17 @@ bysort country (njm) : replace country ="" if _n!=1
 order country A3 APCcvd APCchd APCcbd APChfd APChrt
 drop njm
 export delimited using CSV/SMR_APCS.csv, delimiter(":") novarnames replace
+
+forval s = 0/2 {
+if `s' == 0 {
+local ss = "females"
+}
+if `s' == 1 {
+local ss = "males"
+}
+if `s' == 2 {
+local ss = "people"
+}
 use APCs, clear
 replace A5 = . if (country == "Finland" | country == "Lithuania") & A2 == "hfd"
 replace A6 = . if (country == "Finland" | country == "Lithuania") & A2 == "hfd"
@@ -1258,12 +1268,12 @@ replace AA = -`c' if country == "`C`c''"
 replace AA = AA+0.2 if A2 == "chd"
 replace AA = AA-0.2 if A2 == "hfd"
 twoway ///
-(rcap A7 A6 AA if A2 == "chd" & A3 == "dm" & A4 == 2, horizontal col("0 0 255")) ///
-(scatter AA A5 if A2 == "chd" & A3 == "dm" & A4 == 2, col("0 0 255")) ///
-(rcap A7 A6 AA if A2 == "cbd" & A3 == "dm" & A4 == 2, horizontal col("0 125 0")) ///
-(scatter AA A5 if A2 == "cbd" & A3 == "dm" & A4 == 2, col("0 125 0")) ///
-(rcap A7 A6 AA if A2 == "hfd" & A3 == "dm" & A4 == 2, horizontal col("255 0 255")) ///
-(scatter AA A5 if A2 == "hfd" & A3 == "dm" & A4 == 2, col("255 0 255")) ///
+(rcap A7 A6 AA if A2 == "chd" & A3 == "dm" & A4 == `s', horizontal col("0 0 255")) ///
+(scatter AA A5 if A2 == "chd" & A3 == "dm" & A4 == `s', col("0 0 255")) ///
+(rcap A7 A6 AA if A2 == "cbd" & A3 == "dm" & A4 == `s', horizontal col("0 125 0")) ///
+(scatter AA A5 if A2 == "cbd" & A3 == "dm" & A4 == `s', col("0 125 0")) ///
+(rcap A7 A6 AA if A2 == "hfd" & A3 == "dm" & A4 == `s', horizontal col("255 0 255")) ///
+(scatter AA A5 if A2 == "hfd" & A3 == "dm" & A4 == `s', col("255 0 255")) ///
 , graphregion(color(white)) legend(order( ///
 2 "Coronary heart disease" 4 "Cerebrovascular disease" 6 "Heart failure") cols(1) ///
 ring(0) region(lcolor(none) color(none)) position(1)) ///
@@ -1278,9 +1288,9 @@ ylabel( ///
 -8 "`C8'" ///
 -9 "`C9'" ///
 , angle(0) nogrid) ytitle("") xline(0, lcol(black)) ///
-xlabel(-40(20)40, format(%9.0f)) xtitle(5-year percent change) ///
-title("Mortality rate, people with diabetes", placement(west) col(black) size(medium))
-graph save GPH/APCo_DM, replace
+xlabel(-50(10)50, format(%9.0f)) xtitle(5-year percent change) ///
+title("Mortality rate, `ss' with diabetes", placement(west) col(black) size(medium))
+graph save GPH/APCo_DM_`s', replace
 use APCs, clear
 replace A5 = . if (country == "Finland" | country == "Lithuania") & A2 == "hfd"
 replace A6 = . if (country == "Finland" | country == "Lithuania") & A2 == "hfd"
@@ -1301,12 +1311,12 @@ replace AA = -`c' if country == "`C`c''"
 replace AA = AA+0.2 if A2 == "chd"
 replace AA = AA-0.2 if A2 == "hfd"
 twoway ///
-(rcap A7 A6 AA if A2 == "chd" & A3 == "nondm" & A4 == 2, horizontal col("0 0 255")) ///
-(scatter AA A5 if A2 == "chd" & A3 == "nondm" & A4 == 2, col("0 0 255")) ///
-(rcap A7 A6 AA if A2 == "cbd" & A3 == "nondm" & A4 == 2, horizontal col("0 125 0")) ///
-(scatter AA A5 if A2 == "cbd" & A3 == "nondm" & A4 == 2, col("0 125 0")) ///
-(rcap A7 A6 AA if A2 == "hfd" & A3 == "nondm" & A4 == 2, horizontal col("255 0 255")) ///
-(scatter AA A5 if A2 == "hfd" & A3 == "nondm" & A4 == 2, col("255 0 255")) ///
+(rcap A7 A6 AA if A2 == "chd" & A3 == "nondm" & A4 == `s', horizontal col("0 0 255")) ///
+(scatter AA A5 if A2 == "chd" & A3 == "nondm" & A4 == `s', col("0 0 255")) ///
+(rcap A7 A6 AA if A2 == "cbd" & A3 == "nondm" & A4 == `s', horizontal col("0 125 0")) ///
+(scatter AA A5 if A2 == "cbd" & A3 == "nondm" & A4 == `s', col("0 125 0")) ///
+(rcap A7 A6 AA if A2 == "hfd" & A3 == "nondm" & A4 == `s', horizontal col("255 0 255")) ///
+(scatter AA A5 if A2 == "hfd" & A3 == "nondm" & A4 == `s', col("255 0 255")) ///
 , graphregion(color(white)) legend(order( ///
 2 "Coronary heart disease" 4 "Cerebrovascular disease" 6 "Heart failure") cols(1) ///
 ring(0) region(lcolor(none) color(none)) position(1)) ///
@@ -1321,9 +1331,9 @@ ylabel( ///
 -8 "`C8'" ///
 -9 "`C9'" ///
 , angle(0) nogrid) ytitle("") xline(0, lcol(black)) ///
-xlabel(-40(20)40, format(%9.0f)) xtitle(5-year percent change) ///
-title("Mortality rate, people without diabetes", placement(west) col(black) size(medium))
-graph save GPH/APCo_nonDM, replace
+xlabel(-50(10)50, format(%9.0f)) xtitle(5-year percent change) ///
+title("Mortality rate, `ss' without diabetes", placement(west) col(black) size(medium))
+graph save GPH/APCo_nonDM_`s', replace
 use SMR_APCs, clear
 replace A4 = . if (country == "Finland" | country == "Lithuania") & A2 == "hfd"
 replace A5 = . if (country == "Finland" | country == "Lithuania") & A2 == "hfd"
@@ -1344,12 +1354,12 @@ replace AA = -`c' if country == "`C`c''"
 replace AA = AA+0.2 if A2 == "chd"
 replace AA = AA-0.2 if A2 == "hfd"
 twoway ///
-(rcap A6 A5 AA if A2 == "chd" & A3 == 2, horizontal col("0 0 255")) ///
-(scatter AA A4 if A2 == "chd" & A3 == 2, col("0 0 255")) ///
-(rcap A6 A5 AA if A2 == "cbd" & A3 == 2, horizontal col("0 125 0")) ///
-(scatter AA A4 if A2 == "cbd" & A3 == 2, col("0 125 0")) ///
-(rcap A6 A5 AA if A2 == "hfd" & A3 == 2, horizontal col("255 0 255")) ///
-(scatter AA A4 if A2 == "hfd" & A3 == 2, col("255 0 255")) ///
+(rcap A6 A5 AA if A2 == "chd" & A3 == `s', horizontal col("0 0 255")) ///
+(scatter AA A4 if A2 == "chd" & A3 == `s', col("0 0 255")) ///
+(rcap A6 A5 AA if A2 == "cbd" & A3 == `s', horizontal col("0 125 0")) ///
+(scatter AA A4 if A2 == "cbd" & A3 == `s', col("0 125 0")) ///
+(rcap A6 A5 AA if A2 == "hfd" & A3 == `s', horizontal col("255 0 255")) ///
+(scatter AA A4 if A2 == "hfd" & A3 == `s', col("255 0 255")) ///
 , graphregion(color(white)) legend(order( ///
 2 "Coronary heart disease" 4 "Cerebrovascular disease" 6 "Heart failure") cols(1) ///
 ring(0) region(lcolor(none) color(none)) position(1)) ///
@@ -1364,16 +1374,17 @@ ylabel( ///
 -8 "`C8'" ///
 -9 "`C9'" ///
 , angle(0) nogrid) ytitle("") xline(0, lcol(black)) ///
-xlabel(-40(20)40, format(%9.0f)) xtitle(5-year percent change) ///
-title("Mortality rate ratio", placement(west) col(black) size(medium))
-graph save GPH/APCo_MRR, replace
+xlabel(-50(10)50, format(%9.0f)) xtitle(5-year percent change) ///
+title("Mortality rate ratio, `ss'", placement(west) col(black) size(medium))
+graph save GPH/APCo_MRR_`s', replace
+}
 texdoc stlog close
 texdoc stlog, cmdlog
 graph combine ///
-GPH/APCo_DM.gph ///
-GPH/APCo_nonDM.gph ///
-GPH/APCo_MRR.gph ///
-, graphregion(color(white)) cols(1) altshrink xsize(2.5)
+GPH/APCo_DM_0.gph GPH/APCo_DM_1.gph GPH/APCo_DM_2.gph ///
+GPH/APCo_nonDM_0.gph GPH/APCo_nonDM_1.gph GPH/APCo_nonDM_2.gph ///
+GPH/APCo_MRR_0.gph GPH/APCo_MRR_1.gph GPH/APCo_MRR_2.gph ///
+, graphregion(color(white)) cols(3) altshrink xsize(7)
 texdoc graph, label(APCfig) figure(h!) cabove ///
 caption(5-year percent change in cause-specific mortality rates for people with and without diabetes ///
 and mortality rate ratios for people with vs. without diabetes, by cause of death and country.)
@@ -2900,10 +2911,10 @@ GPH/SMR_hfd_F2.gph ///
 graph export "/home/jimb0w/Documents/CCVD/F2.pdf", as(pdf) name("Graph") replace
 
 graph combine ///
-GPH/APCo_DM.gph ///
-GPH/APCo_nonDM.gph ///
-GPH/APCo_MRR.gph ///
-, graphregion(color(white)) cols(1) altshrink xsize(2.5)
+GPH/APCo_DM_0.gph GPH/APCo_DM_1.gph ///
+GPH/APCo_nonDM_0.gph GPH/APCo_nonDM_1.gph ///
+GPH/APCo_MRR_0.gph GPH/APCo_MRR_1.gph ///
+, graphregion(color(white)) cols(2) altshrink xsize(5)
 graph export "/home/jimb0w/Documents/CCVD/F3.pdf", as(pdf) name("Graph") replace
 
 
