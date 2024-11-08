@@ -600,7 +600,7 @@ local C`i' = country[`i']
 local col`i' = col[`i']
 }
 restore
-if "`ii'" == "hfd" |"`ii'" == "hrt" {
+if "`ii'" == "hfd" | "`ii'" == "hrt" {
 twoway ///
 (rarea ub lb age if country == "`C1'", color("`col1'%30") fintensity(inten80) lwidth(none)) ///
 (line _Rate age if country == "`C1'", color("`col1'") lpattern(solid)) ///
@@ -683,7 +683,7 @@ append using MD/SMRa_`i'_`ii'_`iiii'
 replace country = "Canada (Alberta)" if country == "Canada1"
 replace country = "Canada (Ontario)" if country == "Canada2"
 replace country = "South Korea" if country == "SKorea"
-if "`ii'" == "hfd" |"`ii'" == "hrt" {
+if "`ii'" == "hfd" | "`ii'" == "hrt" {
 twoway ///
 (rarea A3 A2 age if country == "`C1'", color("`col1'%30") fintensity(inten80) lwidth(none)) ///
 (line A1 age if country == "`C1'", color("`col1'") lpattern(solid)) ///
@@ -1237,7 +1237,6 @@ bysort country (njm) : replace country ="" if _n!=1
 order country A3 APCcvd APCchd APCcbd APChfd APChrt
 drop njm
 export delimited using CSV/SMR_APCS.csv, delimiter(":") novarnames replace
-
 forval s = 0/2 {
 if `s' == 0 {
 local ss = "females"
@@ -1378,6 +1377,261 @@ xlabel(-50(10)50, format(%9.0f)) xtitle(5-year percent change) ///
 title("Mortality rate ratio, `ss'", placement(west) col(black) size(medium))
 graph save GPH/APCo_MRR_`s', replace
 }
+foreach o in chd cbd hfd {
+foreach dm in dm nondm {
+
+if "`o'" == "chd" {
+local oo = "CHD"
+}
+if "`o'" == "cbd" {
+local oo = "CBD"
+}
+if "`o'" == "hfd" {
+local oo = "HF"
+}
+if "`dm'" == "dm" {
+local ndm = "with"
+}
+if "`dm'" == "nondm" {
+local ndm = "without"
+}
+
+use APCs, clear
+replace A5 = . if (country == "Finland" | country == "Lithuania") & A2 == "hfd"
+replace A6 = . if (country == "Finland" | country == "Lithuania") & A2 == "hfd"
+replace A7 = . if (country == "Finland" | country == "Lithuania") & A2 == "hfd"
+replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
+replace country = "South Korea" if country == "SKorea"
+drop if A4 == 2
+keep if A2 == "`o'"
+keep if A3 == "`dm'"
+keep A1 country A4-A7
+reshape wide A5-A7, i(A1 country) j(A4)
+preserve
+bysort country : keep if _n == 1
+merge 1:1 country using ccol, keep(3) nogen
+forval i = 1/9 {
+local C`i' = country[`i']
+local col`i' = col[`i']
+}
+restore
+if "`o'" == "hfd"  {
+twoway ///
+(scatter A50 A51 if country == "`C1'", color("`col1'")) ///
+(rcap A70 A60 A51 if country =="`C1'", color("`col1'")) ///
+(rcap A71 A61 A50 if country =="`C1'", color("`col1'") horizontal) ///
+(scatter A50 A51 if country == "`C2'", color("`col2'")) ///
+(rcap A70 A60 A51 if country =="`C2'", color("`col2'")) ///
+(rcap A71 A61 A50 if country =="`C2'", color("`col2'") horizontal) ///
+(scatter A50 A51 if country == "`C3'", color("`col3'")) ///
+(rcap A70 A60 A51 if country =="`C3'", color("`col3'")) ///
+(rcap A71 A61 A50 if country =="`C3'", color("`col3'") horizontal) ///
+(scatter A50 A51 if country == "`C4'", color("`col4'")) ///
+(rcap A70 A60 A51 if country =="`C4'", color("`col4'")) ///
+(rcap A71 A61 A50 if country =="`C4'", color("`col4'") horizontal) ///
+(scatter A50 A51 if country == "`C6'", color("`col6'")) ///
+(rcap A70 A60 A51 if country =="`C6'", color("`col6'")) ///
+(rcap A71 A61 A50 if country =="`C6'", color("`col6'") horizontal) ///
+(scatter A50 A51 if country == "`C8'", color("`col8'")) ///
+(rcap A70 A60 A51 if country =="`C8'", color("`col8'")) ///
+(rcap A71 A61 A50 if country =="`C8'", color("`col8'") horizontal) ///
+(scatter A50 A51 if country == "`C9'", color("`col9'")) ///
+(rcap A70 A60 A51 if country =="`C9'", color("`col9'")) ///
+(rcap A71 A61 A50 if country =="`C9'", color("`col9'") horizontal) ///
+(function y=x, range(-50 50) col(gs7%50) lpattern(dash)) ///
+, legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
+order(1 "`C1'" ///
+4 "`C2'" ///
+7 "`C3'" ///
+10 "`C4'" ///
+13 "`C6'" ///
+16 "`C8'" ///
+19 "`C9'") ///
+cols(1)) ///
+graphregion(color(white)) ///
+ylabel(, grid angle(0)) ///
+xlabel(, grid) ///
+ytitle("5-year percent change (Females)") ///
+xtitle("5-year percent change (Males)") ///
+title("`oo' mortality rate, people `ndm' diabetes", placement(west) color(black) size(medium))
+}
+else {
+twoway ///
+(scatter A50 A51 if country == "`C1'", color("`col1'")) ///
+(rcap A70 A60 A51 if country =="`C1'", color("`col1'")) ///
+(rcap A71 A61 A50 if country =="`C1'", color("`col1'") horizontal) ///
+(scatter A50 A51 if country == "`C2'", color("`col2'")) ///
+(rcap A70 A60 A51 if country =="`C2'", color("`col2'")) ///
+(rcap A71 A61 A50 if country =="`C2'", color("`col2'") horizontal) ///
+(scatter A50 A51 if country == "`C3'", color("`col3'")) ///
+(rcap A70 A60 A51 if country =="`C3'", color("`col3'")) ///
+(rcap A71 A61 A50 if country =="`C3'", color("`col3'") horizontal) ///
+(scatter A50 A51 if country == "`C4'", color("`col4'")) ///
+(rcap A70 A60 A51 if country =="`C4'", color("`col4'")) ///
+(rcap A71 A61 A50 if country =="`C4'", color("`col4'") horizontal) ///
+(scatter A50 A51 if country == "`C5'", color("`col5'")) ///
+(rcap A70 A60 A51 if country =="`C5'", color("`col5'")) ///
+(rcap A71 A61 A50 if country =="`C5'", color("`col5'") horizontal) ///
+(scatter A50 A51 if country == "`C6'", color("`col6'")) ///
+(rcap A70 A60 A51 if country =="`C6'", color("`col6'")) ///
+(rcap A71 A61 A50 if country =="`C6'", color("`col6'") horizontal) ///
+(scatter A50 A51 if country == "`C7'", color("`col7'")) ///
+(rcap A70 A60 A51 if country =="`C7'", color("`col7'")) ///
+(rcap A71 A61 A50 if country =="`C7'", color("`col7'") horizontal) ///
+(scatter A50 A51 if country == "`C8'", color("`col8'")) ///
+(rcap A70 A60 A51 if country =="`C8'", color("`col8'")) ///
+(rcap A71 A61 A50 if country =="`C8'", color("`col8'") horizontal) ///
+(scatter A50 A51 if country == "`C9'", color("`col9'")) ///
+(rcap A70 A60 A51 if country =="`C9'", color("`col9'")) ///
+(rcap A71 A61 A50 if country =="`C9'", color("`col9'") horizontal) ///
+(function y=x, range(-50 50) col(gs7%50) lpattern(dash)) ///
+, legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
+order(1 "`C1'" ///
+4 "`C2'" ///
+7 "`C3'" ///
+10 "`C4'" ///
+13 "`C5'" ///
+16 "`C6'" ///
+19 "`C7'" ///
+22 "`C8'" ///
+25 "`C9'") ///
+cols(1)) ///
+graphregion(color(white)) ///
+ylabel(, grid angle(0)) ///
+xlabel(, grid) ///
+ytitle("5-year percent change (Females)") ///
+xtitle("5-year percent change (Males)") ///
+title("`oo' mortality rate, people `ndm' diabetes", placement(west) color(black) size(medium))
+}
+
+graph save GPH/APC_mf_`o'_`dm', replace
+
+}
+}
+foreach o in chd cbd hfd {
+
+if "`o'" == "chd" {
+local oo = "CHD"
+}
+if "`o'" == "cbd" {
+local oo = "CBD"
+}
+if "`o'" == "hfd" {
+local oo = "HF"
+}
+
+use SMR_APCs, clear
+replace A4 = . if (country == "Finland" | country == "Lithuania") & A2 == "hfd"
+replace A5 = . if (country == "Finland" | country == "Lithuania") & A2 == "hfd"
+replace A6 = . if (country == "Finland" | country == "Lithuania") & A2 == "hfd"
+replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
+replace country = "South Korea" if country == "SKorea"
+drop if A3 == 2
+keep if A2 == "`o'"
+keep A1 country A3-A6
+reshape wide A4-A6, i(A1 country) j(A3)
+preserve
+bysort country : keep if _n == 1
+merge 1:1 country using ccol, keep(3) nogen
+forval i = 1/9 {
+local C`i' = country[`i']
+local col`i' = col[`i']
+}
+restore
+if "`o'" == "hfd"  {
+twoway ///
+(scatter A40 A41 if country == "`C1'", color("`col1'")) ///
+(rcap A60 A50 A41 if country =="`C1'", color("`col1'")) ///
+(rcap A61 A51 A40 if country =="`C1'", color("`col1'") horizontal) ///
+(scatter A40 A41 if country == "`C2'", color("`col2'")) ///
+(rcap A60 A50 A41 if country =="`C2'", color("`col2'")) ///
+(rcap A61 A51 A40 if country =="`C2'", color("`col2'") horizontal) ///
+(scatter A40 A41 if country == "`C3'", color("`col3'")) ///
+(rcap A60 A50 A41 if country =="`C3'", color("`col3'")) ///
+(rcap A61 A51 A40 if country =="`C3'", color("`col3'") horizontal) ///
+(scatter A40 A41 if country == "`C4'", color("`col4'")) ///
+(rcap A60 A50 A41 if country =="`C4'", color("`col4'")) ///
+(rcap A61 A51 A40 if country =="`C5'", color("`col5'") horizontal) ///
+(scatter A40 A41 if country == "`C6'", color("`col6'")) ///
+(rcap A60 A50 A41 if country =="`C6'", color("`col6'")) ///
+(rcap A61 A51 A40 if country =="`C6'", color("`col6'") horizontal) ///
+(scatter A40 A41 if country == "`C8'", color("`col8'")) ///
+(rcap A60 A50 A41 if country =="`C8'", color("`col8'")) ///
+(rcap A61 A51 A40 if country =="`C8'", color("`col8'") horizontal) ///
+(scatter A40 A41 if country == "`C9'", color("`col9'")) ///
+(rcap A60 A50 A41 if country =="`C9'", color("`col9'")) ///
+(rcap A61 A51 A40 if country =="`C9'", color("`col9'") horizontal) ///
+(function y=x, range(-50 50) col(gs7%50) lpattern(dash)) ///
+, legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
+order(1 "`C1'" ///
+4 "`C2'" ///
+7 "`C3'" ///
+10 "`C4'" ///
+13 "`C6'" ///
+16 "`C8'" ///
+19 "`C9'") ///
+cols(1)) ///
+graphregion(color(white)) ///
+ylabel(, grid angle(0)) ///
+xlabel(, grid) ///
+ytitle("5-year percent change (Females)") ///
+xtitle("5-year percent change (Males)") ///
+title("`oo' mortality rate ratio", placement(west) color(black) size(medium))
+}
+else {
+twoway ///
+(scatter A40 A41 if country == "`C1'", color("`col1'")) ///
+(rcap A60 A50 A41 if country =="`C1'", color("`col1'")) ///
+(rcap A61 A51 A40 if country =="`C1'", color("`col1'") horizontal) ///
+(scatter A40 A41 if country == "`C2'", color("`col2'")) ///
+(rcap A60 A50 A41 if country =="`C2'", color("`col2'")) ///
+(rcap A61 A51 A40 if country =="`C2'", color("`col2'") horizontal) ///
+(scatter A40 A41 if country == "`C3'", color("`col3'")) ///
+(rcap A60 A50 A41 if country =="`C3'", color("`col3'")) ///
+(rcap A61 A51 A40 if country =="`C3'", color("`col3'") horizontal) ///
+(scatter A40 A41 if country == "`C4'", color("`col4'")) ///
+(rcap A60 A50 A41 if country =="`C4'", color("`col4'")) ///
+(rcap A61 A51 A40 if country =="`C4'", color("`col4'") horizontal) ///
+(scatter A40 A41 if country == "`C5'", color("`col5'")) ///
+(rcap A60 A50 A41 if country =="`C5'", color("`col5'")) ///
+(rcap A61 A51 A40 if country =="`C5'", color("`col5'") horizontal) ///
+(scatter A40 A41 if country == "`C6'", color("`col6'")) ///
+(rcap A60 A50 A41 if country =="`C6'", color("`col6'")) ///
+(rcap A61 A51 A40 if country =="`C6'", color("`col6'") horizontal) ///
+(scatter A40 A41 if country == "`C7'", color("`col7'")) ///
+(rcap A60 A50 A41 if country =="`C7'", color("`col7'")) ///
+(rcap A61 A51 A40 if country =="`C7'", color("`col7'") horizontal) ///
+(scatter A40 A41 if country == "`C8'", color("`col8'")) ///
+(rcap A60 A50 A41 if country =="`C8'", color("`col8'")) ///
+(rcap A61 A51 A40 if country =="`C8'", color("`col8'") horizontal) ///
+(scatter A40 A41 if country == "`C9'", color("`col9'")) ///
+(rcap A60 A50 A41 if country =="`C9'", color("`col9'")) ///
+(rcap A61 A51 A40 if country =="`C9'", color("`col9'") horizontal) ///
+(function y=x, range(-50 50) col(gs7%50) lpattern(dash)) ///
+, legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
+order(1 "`C1'" ///
+4 "`C2'" ///
+7 "`C3'" ///
+10 "`C4'" ///
+13 "`C5'" ///
+16 "`C6'" ///
+19 "`C7'" ///
+22 "`C8'" ///
+25 "`C9'") ///
+cols(1)) ///
+graphregion(color(white)) ///
+ylabel(, grid angle(0)) ///
+xlabel(, grid) ///
+ytitle("5-year percent change (Females)") ///
+xtitle("5-year percent change (Males)") ///
+title("`oo' mortality rate ratio", placement(west) color(black) size(medium))
+}
+
+graph save GPH/SMRAPC_mf_`o', replace
+
+}
 texdoc stlog close
 texdoc stlog, cmdlog
 graph combine ///
@@ -1388,6 +1642,20 @@ GPH/APCo_MRR_0.gph GPH/APCo_MRR_1.gph GPH/APCo_MRR_2.gph ///
 texdoc graph, label(APCfig) figure(h!) cabove ///
 caption(5-year percent change in cause-specific mortality rates for people with and without diabetes ///
 and mortality rate ratios for people with vs. without diabetes, by cause of death and country.)
+graph combine ///
+GPH/APC_mf_chd_dm.gph ///
+GPH/APC_mf_chd_nondm.gph ///
+GPH/SMRAPC_mf_chd.gph ///
+GPH/APC_mf_cbd_dm.gph ///
+GPH/APC_mf_cbd_nondm.gph ///
+GPH/SMRAPC_mf_cbd.gph ///
+GPH/APC_mf_hfd_dm.gph ///
+GPH/APC_mf_hfd_nondm.gph ///
+GPH/SMRAPC_mf_hfd.gph ///
+, graphregion(color(white)) cols(3) altshrink xsize(7)
+texdoc graph, label(APCfigmf) figure(h!) cabove ///
+caption(5-year percent change in cause-specific mortality rates for people with and without diabetes ///
+and mortality rate ratios for people with vs. without diabetes, comparing males and females.)
 texdoc stlog close
 
 /***
