@@ -3154,6 +3154,171 @@ texdoc stlog close
 /***
 \color{black}
 
+\clearpage
+\section{Ontario sensitivity analysis}
+
+\color{Blue4}
+***/
+
+texdoc stlog, cmdlog nodo
+import delimited "/home/jimb0w/Documents/CM/Consortium COD database v8.csv", clear
+set seed 1312765
+keep if substr(country,1,9)=="Canada (O"
+rename sex SEX
+gen sex = 0 if SEX == "F"
+replace sex = 1 if SEX == "M"
+replace pys_nondm = pys_totpop-pys_dm
+rename (alldeath_dm alldeath_nondm alldeath_totpop) (alldeath_d_dm alldeath_d_nondm alldeath_d_pop)
+foreach i in alldeath can cvd chd cbd hfd res azd dmd inf flu ckd liv1 liv2 {
+di "`i'"
+ta age_gp1 if `i'_d_pop ==.
+gen min_`i' = max(`i'_d_dm,1) if `i'_d_dm!=.
+replace min_`i' = 1 if `i'_d_dm==.
+replace `i'_d_dm=0 if `i'_d_pop==0 
+quietly replace `i'_d_pop = runiformint(min_`i',5) if `i'_d_pop==.
+ta age_gp1 if `i'_d_dm ==.
+gen max_`i' = min(`i'_d_pop,5)
+quietly replace `i'_d_dm = runiformint(1,max_`i') if `i'_d_dm ==.
+}
+foreach i in alldeath can cvd chd cbd hfd res azd dmd inf flu ckd liv1 liv2 {
+di "`i'"
+count if `i'_d_dm > `i'_d_pop
+}
+count if cvd_d_pop + can_d_pop + dmd_d_pop + inf_d_pop + flu_d_pop + res_d_pop + liv1_d_pop + ckd_d_pop + azd_d_pop > alldeath_d_pop
+count if cvd_d_dm + can_d_dm + dmd_d_dm + inf_d_dm + flu_d_dm + res_d_dm + liv1_d_dm + ckd_d_dm + azd_d_dm > alldeath_d_dm
+count if chd_d_pop + cbd_d_pop + hfd_d_pop > cvd_d_pop
+count if chd_d_dm + cbd_d_dm + hfd_d_dm > cvd_d_dm
+ta age_gp1 if chd_d_dm + cbd_d_dm + hfd_d_dm > cvd_d_dm
+replace max_chd = min(cvd_d_dm,5)
+replace chd_d_dm = runiformint(1,max_chd) if chd_d_dm + cbd_d_dm + hfd_d_dm > cvd_d_dm & inrange(chd_d_dm,1,5)
+replace max_cbd = min(cvd_d_dm-chd_d_dm,5)
+replace cbd_d_dm = runiformint(0,max_cbd) if chd_d_dm + cbd_d_dm + hfd_d_dm > cvd_d_dm & inrange(cbd_d_dm,1,5)
+replace max_hfd = min(cvd_d_dm-chd_d_dm-cbd_d_dm,5)
+replace hfd_d_dm = runiformint(0,max_hfd) if chd_d_dm + cbd_d_dm + hfd_d_dm > cvd_d_dm & inrange(hfd_d_dm,1,5)
+count if chd_d_dm + cbd_d_dm + hfd_d_dm > cvd_d_dm
+count if liv1_d_pop < liv2_d_pop
+ta age_gp1 if liv1_d_pop < liv2_d_pop
+replace max_liv2 = min(liv1_d_pop,9)
+replace liv2_d_pop = runiformint(1,max_liv2) if liv1_d_pop < liv2_d_pop & inrange(liv2_d_pop,1,9)
+count if liv1_d_pop < liv2_d_pop
+count if liv1_d_dm < liv2_d_dm
+ta age_gp1 if liv1_d_dm < liv2_d_dm
+replace max_liv2 = min(liv1_d_dm,9)
+replace liv2_d_dm = runiformint(1,max_liv2) if liv1_d_dm < liv2_d_dm & inrange(liv2_d_dm,1,9)
+count if liv1_d_dm < liv2_d_dm
+foreach i in alldeath can cvd chd cbd hfd res azd dmd inf flu ckd liv1 liv2 {
+quietly replace `i'_d_nondm = `i'_d_pop-`i'_d_dm
+}
+count if cvd_d_nondm + can_d_nondm + dmd_d_nondm + inf_d_nondm + flu_d_nondm + res_d_nondm + liv1_d_nondm + ckd_d_nondm + azd_d_nondm > alldeath_d_nondm
+keep if age_gp1!=""
+replace country = "Canada2"
+gen age_dm = substr(age_gp1,1,2)
+replace age_dm = "30" if age_dm == "0-"
+destring age_dm, replace
+replace age_dm = age_dm+5
+gen age_nondm = substr(age_gp1,1,2)
+replace age_nondm = "15" if age_nondm == "0-"
+destring age_nondm, replace
+replace age_nondm = age_nondm+5
+keep country calendar sex alldeath_d_dm alldeath_d_nondm age_dm age_nondm pys_dm pys_nondm cvd_d_dm-azd_d_dm cvd_d_nondm-azd_d_nondm
+save Canada2_s, replace
+texdoc stlog close
+texdoc stlog, cmdlog
+use Canada2_s, clear
+replace country = "Canada (Ontario)" if country == "Canada2"
+bysort country (cal) : egen lb = min(cal)
+bysort country (cal) : egen ub = max(cal)
+tostring lb ub, replace
+gen rang = lb+ "-" + ub
+collapse (sum) pys_dm pys_nondm cvd_d_dm-hfd_d_dm cvd_d_nondm-hfd_d_nondm, by(country sex rang)
+expand 2
+bysort country sex : gen DM = _n-1
+tostring sex pys_dm-DM, replace force format(%15.0fc)
+gen pys = pys_dm if DM == "1"
+replace pys = pys_nondm if DM == "0"
+foreach i in cvd chd cbd hfd {
+gen `i' = `i'_d_dm if DM == "1"
+replace `i' = `i'_d_nondm if DM == "0"
+}
+keep country-rang DM-hfd
+order country rang DM sex
+sort country rang DM sex
+gen njm = _n
+bysort country DM (njm) : replace DM ="" if _n!=1
+bysort country (njm) : replace rang ="" if _n!=1
+bysort country (njm) : replace country ="" if _n!=1
+sort njm
+replace DM = "No diabetes" if DM == "0"
+replace DM = "Diabetes" if DM == "1"
+replace sex = "Female" if sex == "0"
+replace sex = "Male" if sex == "1"
+drop njm
+texdoc stlog close
+texdoc stlog
+list
+texdoc stlog close
+foreach c in Canada2_s {
+use `c', clear
+if "`c'" == "Canada1" {
+local co = "Canada (Alberta)"
+}
+else if "`c'" == "Canada2" {
+local co = "Canada (Ontario)"
+}
+else if "`c'" == "SKorea" {
+local co = "South Korea"
+}
+else {
+local co = "`c'"
+}
+collapse (sum) pys_dm pys_nondm cvd_d_dm-hfd_d_dm cvd_d_nondm-hfd_d_nondm, by(calendar sex)
+foreach i in cvd chd cbd hfd {
+if "`i'" == "cvd" {
+local oo = "Cardiovascular disease"
+}
+if "`i'" == "chd" {
+local oo = "Coronary heart disease"
+}
+if "`i'" == "cbd" {
+local oo = "Cerebrovascular disease"
+}
+if "`i'" == "hfd" {
+local oo = "Heart failure"
+}
+foreach iii in dm nondm {
+if "`iii'" == "dm" {
+local dd = "with"
+}
+if "`iii'" == "nondm" {
+local dd = "without"
+}
+gen `iii'_`i' = 1000*`i'_d_`iii'/pys_`iii'
+twoway ///
+(connected `iii'_`i' cal if sex == 0, col(red)) ///
+(connected `iii'_`i' cal if sex == 1, col(blue)) ///
+, graphregion(color(white)) ///
+ytitle(Mortality rate (per 1,000 person-years), margin(a+2)) ///
+xtitle(Calendar year) ///
+legend(order( ///
+1 "Females" ///
+2 "Males" ///
+) cols(1) position(3) region(lcolor(none) color(none))) ///
+ylabel(,angle(0) format(%9.2f)) ///
+title("People `dd' diabetes", placement(west) size(medium) col(black))
+graph save GPH/cr_`i'_`iii'_`c', replace
+}
+graph combine ///
+GPH/cr_`i'_dm_`c'.gph ///
+GPH/cr_`i'_nondm_`c'.gph ///
+, graphregion(color(white)) cols(2) altshrink xsize(10)
+texdoc graph, label(cr_`i'_`c') figure(h!) cabove ///
+caption(Crude mortality rate by cause of death, sex, and diabetes status. `oo'. `co'.)
+}
+}
+
+/***
+\color{black}
+
 \end{document}
 ***/
 
