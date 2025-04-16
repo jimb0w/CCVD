@@ -87,7 +87,7 @@ Monash University, Melbourne, Australia \\\
 
 texdoc stlog, cmdlog nodo
 cd /home/jimb0w/Documents/CCVD
-*copy /home/jimb0w/Documents/CM/CMdataCVD.dta CMdataCVD.dta
+*copy /home/jimb0w/Documents/CM/CMdataCVD.dta CMdataCVD.dta, replace
 foreach c in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
 use CMdataCVD, clear
 keep if country == "`c'"
@@ -356,7 +356,7 @@ For MRRs, we will use a model with spline effects of
 calendar time, a binary effect of sex, and an interaction between spline effects of age and diabetes status. 
 We will then use this model to estimate the MRR for each country by age and sex. 
 
-All rates and MRRs are predicted in 2017
+All rates and MRRs are predicted in 2017.
 
 \color{Blue4}
 ***/
@@ -859,7 +859,7 @@ poisson `ii'_d_`iii' agesp* timesp* cohsp*, exposure(pys_`iii')
 keep calendar
 bysort cal : keep if _n == 1
 expand 10
-bysort cal : replace cal = cal+((_n-6)/10)
+bysort cal : replace cal = cal+((_n-1)/10)
 expand 6
 bysort cal : gen age = (_n*10)+30
 gen coh = calendar-age
@@ -2419,7 +2419,7 @@ order(2 "`C1'" ///
 18 "`C9'") ///
 cols(1)) ///
 graphregion(color(white)) ///
-ylabel(0.01 "0.01"0.1 1 10 100, grid angle(0)) ///
+ylabel(0.01 "0.01" 0.1 "0.1" 1 10 100, grid angle(0)) ///
 yscale(log range(0.01 100)) ///
 xscale(range(2000 2020)) ///
 xlabel(2000(5)2020, nogrid) ///
@@ -2485,7 +2485,7 @@ order(2 "`C1'" ///
 18 "`C9'") ///
 cols(1)) ///
 graphregion(color(white)) ///
-ylabel(0.01 "0.01"0.1 1 10 100, grid angle(0)) ///
+ylabel(0.01 "0.01" 0.1 "0.1" 1 10 100, grid angle(0)) ///
 yscale(log range(0.01 100)) ///
 xscale(range(2000 2020)) ///
 xlabel(2000(5)2020, nogrid) ///
@@ -3068,8 +3068,8 @@ order(2 "`C1'" ///
 18 "`C9'") ///
 cols(1)) ///
 graphregion(color(white)) ///
-ylabel(0.01 "0.01"0.1 1 10 100, grid angle(0)) ///
-yscale(log range(0.01 100)) ///
+ylabel(0.1 "0.1"0.2 "0.2" 0.5 "0.5" 1 2 5 10 20, grid angle(0)) ///
+yscale(log range(0.075 21)) ///
 xscale(range(2000 2020)) ///
 xlabel(2000(5)2020, nogrid) ///
 ytitle("Mortality rate (per 1,000 person-years)", margin(a+2)) ///
@@ -3140,10 +3140,10 @@ order(2 "`C1'" ///
 18 "`C9'") ///
 cols(1)) ///
 graphregion(color(white)) ///
-ylabel(0.5 "0.5" 1 2 3, grid angle(0)) ///
+ylabel(0.8 "0.8" 1 2 3, grid angle(0)) ///
 xscale(range(2000 2020)) ///
 xlabel(2000(5)2020, nogrid) ///
-yline(1, lcol(black)) yscale(log range(0.5 3)) ///
+yline(1, lcol(black)) yscale(log range(0.8 3)) ///
 ytitle("Mortality rate ratio", margin(a+2)) ///
 xtitle("Calendar year") ///
 title("`oo'", placement(west) color(black) size(large))
