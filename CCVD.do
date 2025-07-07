@@ -1384,7 +1384,7 @@ if "`o'" == "chd" {
 local oo = "CHD"
 }
 if "`o'" == "cbd" {
-local oo = "CBD"
+local oo = "Cerebrovascular disease"
 }
 if "`o'" == "hfd" {
 local oo = "HF"
@@ -1515,7 +1515,7 @@ if "`o'" == "chd" {
 local oo = "CHD"
 }
 if "`o'" == "cbd" {
-local oo = "CBD"
+local oo = "Cerebrovascular disease"
 }
 if "`o'" == "hfd" {
 local oo = "HF"
@@ -3032,6 +3032,96 @@ local C`i' = country[`i']
 local col`i' = col[`i']
 }
 restore
+preserve
+bysort country (cal) : keep if _n==_N
+gen njm = 2*_n
+sort stdrate
+forval i = 1/9 {
+local CC`i' = country[`i']
+local O`i' = njm[`i']
+}
+restore
+if "`ii'" == "hfd" | "`ii'" == "hrt" {
+replace stdrate=. if country == "Finland" | country == "Lithuania"
+replace lb =. if country == "Finland" | country == "Lithuania"
+replace ub =. if country == "Finland" | country == "Lithuania"
+}
+twoway ///
+(rarea ub lb calendar if country == "`C1'", color("`col1'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C1'", color("`col1'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C2'", color("`col2'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C2'", color("`col2'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C3'", color("`col3'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C3'", color("`col3'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C4'", color("`col4'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C4'", color("`col4'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C5'", color("`col5'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C5'", color("`col5'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C6'", color("`col6'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C6'", color("`col6'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C7'", color("`col7'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C7'", color("`col7'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C8'", color("`col8'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C8'", color("`col8'") lpattern(solid)) ///
+(rarea ub lb calendar if country == "`C9'", color("`col9'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if country == "`C9'", color("`col9'") lpattern(solid)) ///
+, legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
+order(`O9' "`CC9'" ///
+`O8' "`CC8'" ///
+`O7' "`CC7'" ///
+`O6' "`CC6'" ///
+`O5' "`CC5'" ///
+`O4' "`CC4'" ///
+`O3' "`CC3'" ///
+`O2' "`CC2'" ///
+`O1' "`CC1'") ///
+cols(1)) ///
+graphregion(color(white)) ///
+ylabel(0.1 "0.1"0.2 "0.2" 0.5 "0.5" 1 2 5 10 20, grid angle(0)) ///
+yscale(log range(0.075 21)) ///
+xscale(range(2000 2020)) ///
+xlabel(2000(5)2020, nogrid) ///
+ytitle("Mortality rate (per 1,000 person-years)", margin(a+2)) ///
+xtitle("Calendar year") ///
+title("`oo'", placement(west) color(black) size(large))
+graph save GPH/STD_GPH_`ii'_`iii'_F1, replace
+}
+}
+foreach ii in chd cbd hfd {
+foreach iii in dm nondm {
+if "`ii'" == "chd" & "`iii'" == "dm" {
+local oo = "a"
+}
+if "`ii'" == "chd" & "`iii'" == "nondm" {
+local oo = "b"
+}
+if "`ii'" == "cbd" & "`iii'" == "dm" {
+local oo = "c"
+}
+if "`ii'" == "cbd" & "`iii'" == "nondm" {
+local oo = "d"
+}
+if "`ii'" == "hfd" & "`iii'" == "dm" {
+local oo = "e"
+}
+if "`ii'" == "hfd" & "`iii'" == "nondm" {
+local oo = "f"
+}
+clear
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
+append using MD/STD_`i'_`ii'_`iii'
+}
+replace country = "Canada (Alberta)" if country == "Canada1"
+replace country = "Canada (Ontario)" if country == "Canada2"
+replace country = "South Korea" if country == "SKorea"
+preserve
+bysort country : keep if _n == 1
+merge 1:1 country using ccol
+forval i = 1/9 {
+local C`i' = country[`i']
+local col`i' = col[`i']
+}
+restore
 if "`ii'" == "hfd" | "`ii'" == "hrt" {
 replace stdrate=. if country == "Finland" | country == "Lithuania"
 replace lb =. if country == "Finland" | country == "Lithuania"
@@ -3068,14 +3158,14 @@ order(2 "`C1'" ///
 18 "`C9'") ///
 cols(1)) ///
 graphregion(color(white)) ///
-ylabel(0.1 "0.1"0.2 "0.2" 0.5 "0.5" 1 2 5 10 20, grid angle(0)) ///
-yscale(log range(0.075 21)) ///
+ylabel(0(5)20, format(%9.0f) grid angle(0)) ///
+yscale(nolog range(0 21)) ///
 xscale(range(2000 2020)) ///
 xlabel(2000(5)2020, nogrid) ///
 ytitle("Mortality rate (per 1,000 person-years)", margin(a+2)) ///
 xtitle("Calendar year") ///
 title("`oo'", placement(west) color(black) size(large))
-graph save GPH/STD_GPH_`ii'_`iii'_F1, replace
+graph save GPH/STD_GPH_`ii'_`iii'_F1_nolog, replace
 }
 }
 *Figure 2
@@ -3104,6 +3194,15 @@ local C`i' = country[`i']
 local col`i' = col[`i']
 }
 restore
+preserve
+bysort country (cal) : keep if _n==_N
+gen njm = 2*_n
+sort A
+forval i = 1/9 {
+local CC`i' = country[`i']
+local O`i' = njm[`i']
+}
+restore
 if "`ii'" == "hfd" | "`ii'" == "hrt" {
 replace A1 =. if country == "Finland" | country == "Lithuania"
 replace A2 =. if country == "Finland" | country == "Lithuania"
@@ -3129,15 +3228,15 @@ twoway ///
 (rarea A3 A2 calendar if country == "`C9'", color("`col9'%30") fintensity(inten80) lwidth(none)) ///
 (line A1 calendar if country == "`C9'", color("`col9'") lpattern(solid)) ///
 , legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
-order(2 "`C1'" ///
-4 "`C2'" ///
-6 "`C3'" ///
-8 "`C4'" ///
-10 "`C5'" ///
-12 "`C6'" ///
-14 "`C7'" ///
-16 "`C8'" ///
-18 "`C9'") ///
+order(`O9' "`CC9'" ///
+`O8' "`CC8'" ///
+`O7' "`CC7'" ///
+`O6' "`CC6'" ///
+`O5' "`CC5'" ///
+`O4' "`CC4'" ///
+`O3' "`CC3'" ///
+`O2' "`CC2'" ///
+`O1' "`CC1'") ///
 cols(1)) ///
 graphregion(color(white)) ///
 ylabel(0.8 "0.8" 1 2 3, grid angle(0)) ///
@@ -3172,6 +3271,16 @@ GPH/STD_GPH_hfd_nondm_F1.gph ///
 graph export "/home/jimb0w/Documents/CCVD/F1.pdf", as(pdf) name("Graph") replace
 
 graph combine ///
+GPH/STD_GPH_chd_dm_F1_nolog.gph ///
+GPH/STD_GPH_chd_nondm_F1_nolog.gph ///
+GPH/STD_GPH_cbd_dm_F1_nolog.gph ///
+GPH/STD_GPH_cbd_nondm_F1_nolog.gph ///
+GPH/STD_GPH_hfd_dm_F1_nolog.gph ///
+GPH/STD_GPH_hfd_nondm_F1_nolog.gph ///
+, graphregion(color(white)) cols(2) altshrink xsize(5)
+graph export "/home/jimb0w/Documents/CCVD/F1_nolog.pdf", as(pdf) name("Graph") replace
+
+graph combine ///
 GPH/SMR_chd_F2.gph ///
 GPH/SMR_cbd_F2.gph ///
 GPH/SMR_hfd_F2.gph ///
@@ -3184,6 +3293,104 @@ GPH/APCo_nonDM_0.gph GPH/APCo_nonDM_1.gph ///
 GPH/APCo_MRR_0.gph GPH/APCo_MRR_1.gph ///
 , graphregion(color(white)) cols(2) altshrink xsize(5)
 graph export "/home/jimb0w/Documents/CCVD/F3.pdf", as(pdf) name("Graph") replace
+
+/*
+For a reviewer:
+
+copy ~/Documents/CM/CMdata.dta CMdata.dta
+use CMdata, clear
+collapse (sum) alldeath_d_dm alldeath_d_nondm, by(country cal age_dm age_nondm)
+bysort country cal (age_dm) : egen totdeathdm = sum(alldeath_d_dm)
+bysort country cal (age_nondm) : egen totdeathnondm = sum(alldeath_d_nondm)
+gen prpdeath_dm = alldeath_d_dm/totdeathdm
+gen prpdeath_nondm = alldeath_d_nondm/totdeathnondm
+
+drop if country == "SKorea" & cal < 2011
+
+foreach c in Australia Canada1 Canada2 Denmark Finland France Lithuania SKorea {
+if "`c'" == "Canada1" {
+local co = "Canada (Alberta)"
+}
+else if "`c'" == "Canada2" {
+local co = "Canada (Ontario)"
+}
+else if "`c'" == "SKorea" {
+local co = "South Korea"
+}
+else {
+local co = "`c'"
+}
+colorpalette viridis, n(8) nograph
+twoway ///
+(connected prpdeath_dm cal if age_dm == 35 & country == "`c'", col("`r(p1)'")) ///
+(connected prpdeath_dm cal if age_dm == 45 & country == "`c'", col("`r(p2)'")) ///
+(connected prpdeath_dm cal if age_dm == 55 & country == "`c'", col("`r(p3)'")) ///
+(connected prpdeath_dm cal if age_dm == 65 & country == "`c'", col("`r(p4)'")) ///
+(connected prpdeath_dm cal if age_dm == 75 & country == "`c'", col("`r(p5)'")) ///
+(connected prpdeath_dm cal if age_dm == 85 & country == "`c'", col("`r(p6)'")) ///
+(connected prpdeath_dm cal if age_dm == 95 & country == "`c'", col("`r(p7)'")) ///
+, legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
+order(1 "<40" ///
+2 "40-49" ///
+3 "50-59" ///
+4 "60-69" ///
+5 "70-79" ///
+6 "80-89" ///
+7 "90+" ///
+) ///
+cols(1) subtitle(Age group)) ///
+graphregion(color(white)) ///
+ylabel(0(0.1)0.5, format(%9.1f) angle(0)) ///
+xlabel(, nogrid) ///
+ytitle("Proportion of deaths", margin(a+2)) ///
+xtitle("Calendar year") ///
+title("`co', people with diabetes", placement(west) color(black) size(large))
+graph save GPH/rccc1_c_dm_`c', replace
+
+colorpalette viridis, n(8) nograph
+twoway ///
+(connected prpdeath_nondm cal if age_nondm == 20 & country == "`c'", col("`r(p1)'")) ///
+(connected prpdeath_nondm cal if age_nondm == 45 & country == "`c'", col("`r(p2)'")) ///
+(connected prpdeath_nondm cal if age_nondm == 55 & country == "`c'", col("`r(p3)'")) ///
+(connected prpdeath_nondm cal if age_nondm == 65 & country == "`c'", col("`r(p4)'")) ///
+(connected prpdeath_nondm cal if age_nondm == 75 & country == "`c'", col("`r(p5)'")) ///
+(connected prpdeath_nondm cal if age_nondm == 85 & country == "`c'", col("`r(p6)'")) ///
+(connected prpdeath_nondm cal if age_nondm == 95 & country == "`c'", col("`r(p7)'")) ///
+, legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
+order(1 "<40" ///
+2 "40-49" ///
+3 "50-59" ///
+4 "60-69" ///
+5 "70-79" ///
+6 "80-89" ///
+7 "90+" ///
+) ///
+cols(1) subtitle(Age group)) ///
+graphregion(color(white)) ///
+ylabel(0(0.1)0.5, format(%9.1f) angle(0)) ///
+xlabel(, nogrid) ///
+ytitle("Proportion of deaths", margin(a+2)) ///
+xtitle("Calendar year") ///
+title("`co', people without diabetes", placement(west) color(black) size(large))
+graph save GPH/rccc1_c_nondm_`c', replace
+}
+
+
+graph combine ///
+GPH/rccc1_c_dm_Australia.gph GPH/rccc1_c_nondm_Australia.gph ///
+GPH/rccc1_c_dm_Canada1.gph GPH/rccc1_c_nondm_Canada1.gph ///
+GPH/rccc1_c_dm_Canada2.gph GPH/rccc1_c_nondm_Canada2.gph ///
+GPH/rccc1_c_dm_Denmark.gph GPH/rccc1_c_nondm_Denmark.gph ///
+GPH/rccc1_c_dm_Finland.gph GPH/rccc1_c_nondm_Finland.gph ///
+GPH/rccc1_c_dm_France.gph GPH/rccc1_c_nondm_France.gph ///
+GPH/rccc1_c_dm_Lithuania.gph GPH/rccc1_c_nondm_Lithuania.gph ///
+GPH/rccc1_c_dm_SKorea.gph GPH/rccc1_c_nondm_SKorea.gph ///
+, graphregion(color(white)) cols(2) altshrink xsize(2.5)
+graph export "/home/jimb0w/Documents/CCVD/RRcc.pdf", as(pdf) name("Graph") replace
+
+
+*/
+
 
 
 ! pdflatex CCVD
