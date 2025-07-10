@@ -2659,7 +2659,85 @@ texdoc graph, label(STDMRF_`ii') figure(h!) cabove ///
 caption(Age-standardised mortality rate by cause of death, people aged 40-89. `co'.)
 }
 texdoc stlog close
-
+texdoc stlog, cmdlog nodo
+foreach i in Australia Canada1 Canada2 Denmark Finland France Lithuania Scotland SKorea {
+if "`i'" == "Canada1" {
+local co = "Canada (Alberta)"
+}
+else if "`i'" == "Canada2" {
+local co = "Canada (Ontario)"
+}
+else if "`i'" == "SKorea" {
+local co = "South Korea"
+}
+else {
+local co = "`i'"
+}
+clear
+foreach ii in cvd chd cbd hfd {
+foreach iii in dm nondm {
+append using MD/STD_`i'_`ii'_`iii'
+}
+}
+if "`i'" == "Finland" | "`i'" == "Lithuania" {
+replace stdrate=. if OC == "hfd"
+replace lb =. if OC == "hfd"
+replace ub =. if OC == "hfd"
+}
+local col1 = "0 0 0"
+local col2 = "0 0 255"
+local col3 = "0 125 0"
+local col4 = "255 0 255"
+twoway ///
+(rarea ub lb calendar if OC == "cvd" & DM=="dm", color("`col1'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if OC == "cvd" & DM=="dm", color("`col1'") lpattern(solid)) ///
+(rarea ub lb calendar if OC == "chd" & DM=="dm", color("`col2'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if OC == "chd" & DM=="dm", color("`col2'") lpattern(solid)) ///
+(rarea ub lb calendar if OC == "cbd" & DM=="dm", color("`col3'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if OC == "cbd" & DM=="dm", color("`col3'") lpattern(solid)) ///
+(rarea ub lb calendar if OC == "hfd" & DM=="dm", color("`col4'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if OC == "hfd" & DM=="dm", color("`col4'") lpattern(solid)) ///
+(rarea ub lb calendar if OC == "cvd" & DM=="nondm", color("`col1'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if OC == "cvd" & DM=="nondm", color("`col1'") lpattern(dash)) ///
+(rarea ub lb calendar if OC == "chd" & DM=="nondm", color("`col2'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if OC == "chd" & DM=="nondm", color("`col2'") lpattern(dash)) ///
+(rarea ub lb calendar if OC == "cbd" & DM=="nondm", color("`col3'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if OC == "cbd" & DM=="nondm", color("`col3'") lpattern(dash)) ///
+(rarea ub lb calendar if OC == "hfd" & DM=="nondm", color("`col4'%30") fintensity(inten80) lwidth(none)) ///
+(line stdrate calendar if OC == "hfd" & DM=="nondm", color("`col4'") lpattern(dash)) ///
+, legend(symxsize(0.13cm) position(3) region(lcolor(white) color(none)) ///
+order(2 "Cardiovascular disease" ///
+4 "Coronary heart disease" ///
+6 "Cerebrovascular disease" ///
+8 "Heart failure") ///
+cols(1)) ///
+graphregion(color(white)) ///
+ylabel(0.01 "0.01" 0.02 "0.02" 0.05 "0.05" 0.1 "0.1" 0.2 "0.2" 0.5 "0.5" 1 2 5 10 20, grid angle(0)) ///
+yscale(log range(0.01 30)) ///
+xscale(range(2000 2020)) ///
+xlabel(2000(5)2020, nogrid) ///
+ytitle("Mortality rate (per 1,000 person-years)", margin(a+2)) ///
+xtitle("Calendar year") ///
+title("`co'", placement(west) color(black) size(medium))
+graph save GPH/STDcvd_GPH_`i'_FR, replace
+}
+texdoc stlog close
+texdoc stlog, cmdlog 
+graph combine ///
+GPH/STDcvd_GPH_Australia_FR.gph ///
+GPH/STDcvd_GPH_Canada1_FR.gph ///
+GPH/STDcvd_GPH_Canada2_FR.gph ///
+GPH/STDcvd_GPH_Denmark_FR.gph ///
+GPH/STDcvd_GPH_Finland_FR.gph ///
+GPH/STDcvd_GPH_France_FR.gph ///
+GPH/STDcvd_GPH_Lithuania_FR.gph ///
+GPH/STDcvd_GPH_Scotland_FR.gph ///
+GPH/STDcvd_GPH_SKorea_FR.gph ///
+, graphregion(color(white)) cols(3) altshrink xsize(8)
+texdoc graph, label(STDMRFFR) figure(h!) cabove ///
+caption(Age-standardised mortality rate by cause of death, people aged 40-89. `co'. ///
+Solid lines show people with diabetes; dashed lines people without diabetes.)
+texdoc stlog close
 
 
 /***
